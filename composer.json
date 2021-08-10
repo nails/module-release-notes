@@ -1,0 +1,49 @@
+{
+    "name": "nails/module-release-notes",
+    "keywords": [],
+    "homepage": "http://nailsapp.co.uk/modules/release-notes",
+    "description": "This module provides Admin controllers and widgets for rendering project release notes.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Pablo de la Pena",
+            "email": "p@nailsapp.co.uk",
+            "homepage": "http://nailsapp.co.uk",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "email": "hello@nailsapp.co.uk"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "nails\/admin": "dev-develop"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "9.*",
+        "phpstan/phpstan": "0.*"
+    },
+    "scripts": {
+        "test": "./vendor/bin/phpunit",
+        "analyse": "./vendor/bin/phpstan analyse -c .phpstan/config.neon"
+    },
+    "autoload": {
+        "psr-4": {
+            "Nails\\ReleaseNotes\\": "src\/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Test\\ReleaseNotes\\": "tests\/"
+        }
+    },
+    "extra": {
+        "nails": {
+            "moduleName": "releaseNotes",
+            "type": "module",
+            "namespace": "Nails\\ReleaseNotes\\",
+            "data": {}
+        }
+    }
+}
