@@ -18,7 +18,9 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "nails\/module-admin": "dev-develop"
+        "nails\/module-admin": "dev-develop",
+        "nails\/module-console": "dev-develop",
+        "nails\/module-cron": "dev-develop"
     },
     "require-dev": {
         "phpunit/phpunit": "9.*",
