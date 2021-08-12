@@ -19,7 +19,7 @@ $config['email_types'] = [
         'template_header' => '',
         'template_body'   => 'releaseNotes/email/notification',
         'template_footer' => '',
-        'default_subject' => 'New Features',
+        'default_subject' => 'New Website Updates',
         'can_unsubscribe' => true,
         'factory'         => Constants::MODULE_SLUG . '::EmailNotification',
     ],
