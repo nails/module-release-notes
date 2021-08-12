@@ -7,10 +7,12 @@ use Nails\Common\Factory\HttpRequest\Get;
 use Nails\Common\Factory\HttpResponse;
 use Nails\Common\Resource\DateTime;
 use Nails\Common\Service\HttpCodes;
+use Nails\Components;
 use Nails\Console\Command\Base;
 use Nails\Console\Exception\ConsoleException;
 use Nails\Factory;
 use Nails\ReleaseNotes\Constants;
+use Nails\ReleaseNotes\Interfaces\Notification;
 use Nails\ReleaseNotes\Settings\ReleaseNotes;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,6 +26,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class Fetch extends Base
 {
     private array $aTags = [];
+    private array $aNewTags = [];
 
     // --------------------------------------------------------------------------
 
@@ -60,7 +63,8 @@ class Fetch extends Base
             $this
                 ->validateSettings($sRepo, $sUser, $sToken)
                 ->fetchTags($sRepo, $sUser, $sToken)
-                ->syncTags($sRepo, $sUser, $sToken);
+                ->syncTags($sRepo, $sUser, $sToken)
+                ->sendNotifications();
 
             return static::EXIT_CODE_SUCCESS;
 
@@ -200,18 +204,18 @@ class Fetch extends Base
                 /** @var DateTime $oDate */
                 $oDate = Factory::resource('DateTime', null, ['raw' => $oTag->tagger->date]);
 
-                $iId = $oReleaseNotesModel->create([
+                $oNewTag = $oReleaseNotesModel->create([
                     'tag'     => $oTag->tag,
                     'sha'     => $oTag->sha,
                     'message' => $oTag->message,
                     'date'    => $oDate->format('Y-m-d H:i:s'),
-                ]);
+                ], true);
 
-                if (empty($iId)) {
+                if (empty($oNewTag)) {
                     throw new ConsoleException('Failed to write tag. ' . $oReleaseNotesModel->lastError());
                 }
 
-                //  @todo (Pablo 2021-08-12) - Send alerts? If so, send grouped
+                $this->aNewTags[] = $oNewTag;
 
                 $this->oOutput->writeln('<info>done</info>');
 
@@ -220,6 +224,89 @@ class Fetch extends Base
                     '<error>%s</error>',
                     $e->getMessage()
                 ));
+            }
+        }
+
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sends notifications if required
+     *
+     * @return $this
+     * @throws \Nails\Common\Exception\FactoryException
+     * @throws \Nails\Common\Exception\NailsException
+     */
+    protected function sendNotifications(): self
+    {
+        if (empty($this->aNewTags)) {
+            return $this;
+        }
+
+        //  Reverse the array so the most recent release is first
+        $this->aNewTags = array_reverse($this->aNewTags);
+
+        $aEmails = [];
+
+        foreach (Components::available() as $oComponent) {
+
+            $aClasses = $oComponent
+                ->findClasses('ReleaseNotes\\Notification')
+                ->whichImplement(Notification::class)
+                ->whichCanBeInstantiated();
+
+            foreach ($aClasses as $sClass) {
+
+                /** @var Notification $oNotification */
+                $oNotification = new $sClass();
+                $aEmails       = array_merge($aEmails, $oNotification->getEmails());
+            }
+        }
+
+        $aEmails = array_map('trim', $aEmails);
+        $aEmails = array_unique($aEmails);
+        $aEmails = array_filter($aEmails);
+        $aEmails = array_values($aEmails);
+
+        if (empty($aEmails)) {
+            return $this;
+        }
+
+        $this->oOutput->writeln('Sending notifications... ');
+
+        /** @var \Nails\ReleaseNotes\Factory\Email\Notification $oEmail */
+        $oEmail = Factory::factory('EmailNotification', Constants::MODULE_SLUG);
+        $oEmail->data([
+            'tags' => array_map(function (\Nails\ReleaseNotes\Resource\ReleaseNotes $oTag) {
+                return [
+                    'tag'     => $oTag->tag,
+                    'date'    => $oTag->date->formatted,
+                    'message' => [
+                        'html' => $oTag->renderHtml(),
+                        'text' => $oTag->renderText(),
+                    ],
+                ];
+            }, $this->aNewTags),
+        ]);
+
+        foreach ($aEmails as $sEmail) {
+            $this->oOutput->write(sprintf(
+                ' — <info>%s</info>... ',
+                $sEmail
+            ));
+
+            try {
+
+                $oEmail
+                    ->to($sEmail)
+                    ->send();
+
+                $this->oOutput->writeln('<info>done</info>');
+
+            } catch (\Throwable $e) {
+                $this->oOutput->writeln('<error>' . $e->getMessage() . '</error>');
             }
         }
 

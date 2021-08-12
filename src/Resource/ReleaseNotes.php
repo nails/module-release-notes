@@ -20,14 +20,27 @@ class ReleaseNotes extends Entity
     // --------------------------------------------------------------------------
 
     /**
-     * Renders the message, parsing signatures and markdown
+     * Renders the message as HTML, parsing signatures and markdown
      *
      * @return string
      */
-    public function renderMessage(): string
+    public function renderHtml(): string
     {
         $sOut = $this->filterSignatures($this->message ?? '');
         $sOut = $this->parseMarkdown($sOut);
+        return $sOut;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Renders the message as plain text, parsing signatures
+     *
+     * @return string
+     */
+    public function renderText(): string
+    {
+        $sOut = $this->filterSignatures($this->message ?? '');
         return $sOut;
     }
 

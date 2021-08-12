@@ -34,7 +34,7 @@ class ReleaseNotes extends DefaultController
     {
         parent::__construct();
         $this->aConfig['INDEX_FIELDS']['Message'] = function (\Nails\ReleaseNotes\Resource\ReleaseNotes $oNote) {
-            return $oNote->renderMessage();
+            return $oNote->renderHtml();
         };
     }
 }
