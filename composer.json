@@ -21,6 +21,7 @@
         "nails\/module-admin": "dev-develop",
         "nails\/module-console": "dev-develop",
         "nails\/module-cron": "dev-develop",
+        "nails\/module-email": "dev-develop",
         "erusev/parsedown": "~1.7"
     },
     "require-dev": {

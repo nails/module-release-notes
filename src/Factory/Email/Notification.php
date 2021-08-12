@@ -18,7 +18,7 @@ class Notification extends Email
     /**
      * Returns test data to use when sending test emails
      *
-     * @return array
+     * @return array[]
      */
     public function getTestData(): array
     {

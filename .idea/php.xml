@@ -88,9 +88,12 @@
       <path value="$PROJECT_DIR$/vendor/nails/module-console" />
       <path value="$PROJECT_DIR$/vendor/hybridauth/hybridauth" />
       <path value="$PROJECT_DIR$/vendor/nails/module-auth" />
+      <path value="$PROJECT_DIR$/vendor/erusev/parsedown" />
+      <path value="$PROJECT_DIR$/vendor/phpmailer/phpmailer" />
+      <path value="$PROJECT_DIR$/vendor/nails/module-email" />
     </include_path>
   </component>
-  <component name="PhpProjectSharedConfiguration" php_language_level="7.1">
+  <component name="PhpProjectSharedConfiguration" php_language_level="7.4">
     <option name="suggestChangeDefaultLanguageLevel" value="false" />
   </component>
   <component name="PhpStan">

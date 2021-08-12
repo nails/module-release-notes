@@ -59,7 +59,7 @@ class ReleaseNotes implements Interfaces\Dashboard\Widget
      */
     public function getBody(): string
     {
-        $sGuid   = md5(microtime(true));
+        $sGuid   = md5((string) microtime(true));
         $sStyles = <<<EOT
         <style type="text/css">
 
@@ -153,8 +153,11 @@ class ReleaseNotes implements Interfaces\Dashboard\Widget
         /** @var \Nails\ReleaseNotes\Model\ReleaseNotes $oReleaseNotesModel */
         $oReleaseNotesModel = Factory::model('ReleaseNotes', Constants::MODULE_SLUG);
 
-        return $oReleaseNotesModel->getAll([
+        /** @var \Nails\ReleaseNotes\Resource\ReleaseNotes[] $aTags */
+        $aTags = $oReleaseNotesModel->getAll([
             'limit' => static::LIMIT,
         ]);
+
+        return $aTags;
     }
 }

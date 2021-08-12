@@ -55,7 +55,7 @@ class ReleaseNotes extends Entity
      */
     private function filterSignatures(string $sMessage): string
     {
-        return preg_replace(
+        return (string) preg_replace(
             array_map(
                 function ($sType) {
                     return '/-----BEGIN ' . $sType . ' SIGNATURE-----.+-----END ' . $sType . ' SIGNATURE-----/s';

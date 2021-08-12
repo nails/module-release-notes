@@ -2,6 +2,8 @@
 
 namespace Nails\ReleaseNotes\Console\Command;
 
+use Nails\Common\Exception\FactoryException;
+use Nails\Common\Exception\ModelException;
 use Nails\Common\Exception\ValidationException;
 use Nails\Common\Factory\HttpRequest\Get;
 use Nails\Common\Factory\HttpResponse;
@@ -12,9 +14,9 @@ use Nails\Console\Command\Base;
 use Nails\Console\Exception\ConsoleException;
 use Nails\Factory;
 use Nails\ReleaseNotes\Constants;
-use Nails\ReleaseNotes\Interfaces\Notification;
-use Nails\ReleaseNotes\Settings\ReleaseNotes;
-use Symfony\Component\Console\Input\InputArgument;
+use Nails\ReleaseNotes\Resource;
+use Nails\ReleaseNotes\Interfaces;
+use Nails\ReleaseNotes\Settings;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -25,7 +27,10 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class Fetch extends Base
 {
+    /** @var \stdClass[] */
     private array $aTags = [];
+
+    /** @var Resource\ReleaseNotes[] */
     private array $aNewTags = [];
 
     // --------------------------------------------------------------------------
@@ -33,7 +38,7 @@ class Fetch extends Base
     /**
      * Configures the command
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('releasenotes:fetch')
@@ -48,9 +53,9 @@ class Fetch extends Base
      * @param InputInterface  $oInput
      * @param OutputInterface $oOutput
      *
-     * @return int|void
+     * @return int
      */
-    protected function execute(InputInterface $oInput, OutputInterface $oOutput)
+    protected function execute(InputInterface $oInput, OutputInterface $oOutput): int
     {
         parent::execute($oInput, $oOutput);
 
@@ -63,7 +68,7 @@ class Fetch extends Base
             $this
                 ->validateSettings($sRepo, $sUser, $sToken)
                 ->fetchTags($sRepo, $sUser, $sToken)
-                ->syncTags($sRepo, $sUser, $sToken)
+                ->syncTags($sUser, $sToken)
                 ->sendNotifications();
 
             return static::EXIT_CODE_SUCCESS;
@@ -80,14 +85,14 @@ class Fetch extends Base
      * Returns the settings
      *
      * @return string[]
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     private function getSettings(): array
     {
         return [
-            appSetting(ReleaseNotes::KEY_GH_REPO, Constants::MODULE_SLUG),
-            appSetting(ReleaseNotes::KEY_GH_USER, Constants::MODULE_SLUG),
-            appSetting(ReleaseNotes::KEY_GH_TOKEN, Constants::MODULE_SLUG),
+            appSetting(Settings\ReleaseNotes::KEY_GH_REPO, Constants::MODULE_SLUG),
+            appSetting(Settings\ReleaseNotes::KEY_GH_USER, Constants::MODULE_SLUG),
+            appSetting(Settings\ReleaseNotes::KEY_GH_TOKEN, Constants::MODULE_SLUG),
         ];
     }
 
@@ -108,14 +113,14 @@ class Fetch extends Base
         if (empty($sRepo)) {
             throw new ValidationException(sprintf(
                 'Setting `%s` is required',
-                ReleaseNotes::KEY_GH_REPO
+                Settings\ReleaseNotes::KEY_GH_REPO
             ));
 
         } elseif (!empty($sUser) && empty($sToken)) {
             throw new ValidationException(sprintf(
                 'Setting `%s` is required when `%s` is not empty',
-                ReleaseNotes::KEY_GH_TOKEN,
-                ReleaseNotes::KEY_GH_USER
+                Settings\ReleaseNotes::KEY_GH_TOKEN,
+                Settings\ReleaseNotes::KEY_GH_USER
             ));
         }
 
@@ -133,6 +138,7 @@ class Fetch extends Base
      *
      * @return $this
      * @throws ConsoleException
+     * @throws FactoryException
      */
     private function fetchTags(?string $sRepo, ?string $sUser, ?string $sToken): self
     {
@@ -146,7 +152,7 @@ class Fetch extends Base
             $sToken
         );
 
-        $this->aTags = $oResponse->getBody();
+        $this->aTags = (array) $oResponse->getBody();
 
         $this->oOutput->writeln(sprintf(
             '<info>done</info>, found <info>%s</info> tags.',
@@ -158,19 +164,17 @@ class Fetch extends Base
 
     // --------------------------------------------------------------------------
 
-
     /**
      * Processes each tag, importing new ones as they're found
      *
-     * @param string|null $sRepo
      * @param string|null $sUser
      * @param string|null $sToken
      *
      * @return $this
-     * @throws \Nails\Common\Exception\FactoryException
-     * @throws \Nails\Common\Exception\ModelException
+     * @throws FactoryException
+     * @throws ModelException
      */
-    private function syncTags(?string $sRepo, ?string $sUser, ?string $sToken): self
+    private function syncTags(?string $sUser, ?string $sToken): self
     {
         /** @var \Nails\ReleaseNotes\Model\ReleaseNotes $oReleaseNotesModel */
         $oReleaseNotesModel = Factory::model('ReleaseNotes', Constants::MODULE_SLUG);
@@ -199,6 +203,7 @@ class Fetch extends Base
                     $sToken
                 );
 
+                /** @var \stdClass $oTag */
                 $oTag = $oResponse->getBody();
 
                 /** @var DateTime $oDate */
@@ -236,7 +241,7 @@ class Fetch extends Base
      * Sends notifications if required
      *
      * @return $this
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      * @throws \Nails\Common\Exception\NailsException
      */
     protected function sendNotifications(): self
@@ -254,12 +259,12 @@ class Fetch extends Base
 
             $aClasses = $oComponent
                 ->findClasses('ReleaseNotes\\Notification')
-                ->whichImplement(Notification::class)
+                ->whichImplement(Interfaces\Notification::class)
                 ->whichCanBeInstantiated();
 
             foreach ($aClasses as $sClass) {
 
-                /** @var Notification $oNotification */
+                /** @var Interfaces\Notification $oNotification */
                 $oNotification = new $sClass();
                 $aEmails       = array_merge($aEmails, $oNotification->getEmails());
             }
@@ -279,7 +284,7 @@ class Fetch extends Base
         /** @var \Nails\ReleaseNotes\Factory\Email\Notification $oEmail */
         $oEmail = Factory::factory('EmailNotification', Constants::MODULE_SLUG);
         $oEmail->data([
-            'tags' => array_map(function (\Nails\ReleaseNotes\Resource\ReleaseNotes $oTag) {
+            'tags' => array_map(function (Resource\ReleaseNotes $oTag) {
                 return [
                     'tag'     => $oTag->tag,
                     'date'    => $oTag->date->formatted,
@@ -324,7 +329,7 @@ class Fetch extends Base
      *
      * @return HttpResponse
      * @throws ConsoleException
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     private function callGitHubApi(string $sPath, ?string $sUser, ?string $sToken): HttpResponse
     {
@@ -335,16 +340,18 @@ class Fetch extends Base
             ->path($sPath);
 
         if (!empty($sUser) || !empty($sToken)) {
-            $oHttpGet->auth($sUser, $sToken);
+            $oHttpGet->auth((string) $sUser, (string) $sToken);
         }
 
         $oResponse = $oHttpGet->execute();
 
         if ($oResponse->getStatusCode() !== HttpCodes::STATUS_OK) {
+            /** @var \stdClass $oError */
+            $oError = $oResponse->getBody();
             throw new ConsoleException(
                 sprintf(
                     'HTTP request returned a non-200 status code. %s',
-                    $oResponse->getBody()->message ?? ''
+                    $oError->message ?? ''
                 ),
                 $oResponse->getStatusCode()
             );
@@ -364,6 +371,6 @@ class Fetch extends Base
      */
     private function parseTagRef(string $sRef): string
     {
-        return preg_replace('/^refs\/tags\//', '', $sRef);
+        return (string) preg_replace('/^refs\/tags\//', '', $sRef);
     }
 }
