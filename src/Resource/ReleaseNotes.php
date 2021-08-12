@@ -19,9 +19,62 @@ class ReleaseNotes extends Entity
 
     // --------------------------------------------------------------------------
 
+    /**
+     * Renders the message, parsing signatures and markdown
+     *
+     * @return string
+     */
     public function renderMessage(): string
     {
-        //  @todo (Pablo 2021-08-11) - Compile Markdown
-        return nl2br($this->message);
+        $sOut = $this->filterSignatures($this->message ?? '');
+        $sOut = $this->parseMarkdown($sOut);
+        return $sOut;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Filters GPG signatures form the input
+     *
+     * @param string $sMessage The input
+     *
+     * @return string
+     */
+    private function filterSignatures(string $sMessage): string
+    {
+        return preg_replace(
+            array_map(
+                function ($sType) {
+                    return '/-----BEGIN ' . $sType . ' SIGNATURE-----.+-----END ' . $sType . ' SIGNATURE-----/s';
+                },
+                [
+                    'PGP',
+                ]
+            ),
+            '',
+            $sMessage
+        );
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Parses the input as markdown
+     *
+     * @param string $sMessage The input
+     *
+     * @return string
+     */
+    protected function parseMarkdown(string $sMessage): string
+    {
+        /**
+         * (Pablo 2021-08-12) - Replace n and em dashes at the beginning of lines
+         * with a simple dash so they render as lists. This is more to address my
+         * [bad?] habit of using emdashes in release notes.
+         */
+        $sMessage = preg_replace('/^(–|—) /m', '- ', $sMessage);
+
+        $oParsedown = new \Parsedown();
+        return $oParsedown->text($sMessage);
     }
 }

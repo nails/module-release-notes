@@ -19,8 +19,8 @@ class ReleaseNotes extends DefaultController
     const CONFIG_INDEX_NOTES_ENABLE = false;
     const CONFIG_EDIT_NOTES_ENABLE  = false;
     const CONFIG_SORT_OPTIONS       = [
-        'Tag'  => 'tag',
         'Date' => 'date',
+        'Tag'  => 'tag',
     ];
     const CONFIG_INDEX_FIELDS       = [
         'Tag'     => 'tag',

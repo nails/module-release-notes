@@ -1,17 +1,18 @@
 <?php
 
-namespace App\Admin\Dashboard\Widget;
+namespace Nails\ReleaseNotes\Admin\Dashboard\Widget;
 
 use Nails\Admin\Admin\Dashboard\Widget\Base;
 use Nails\Admin\Interfaces;
 use Nails\Admin\Traits;
 use Nails\Common\Factory\HttpRequest\Get;
 use Nails\Factory;
+use Nails\ReleaseNotes\Constants;
 
 /**
  * Class ReleaseNotes
  *
- * @package App\\Admin\Dashboard\Widget
+ * @package Nails\ReleaseNotes\\Admin\Dashboard\Widget
  */
 class ReleaseNotes implements Interfaces\Dashboard\Widget
 {
@@ -19,11 +20,7 @@ class ReleaseNotes implements Interfaces\Dashboard\Widget
 
     // --------------------------------------------------------------------------
 
-    const REPO       = 'shedcollective/ncl-website';
-    const AUTH_USER  = null;
-    const AUTH_TOKEN = null;
-    //  @todo (Pablo 2021-08-10) - support pagination, somehow
-    const LIMIT = 3;
+    const LIMIT = 10;
 
     // --------------------------------------------------------------------------
 
@@ -42,7 +39,17 @@ class ReleaseNotes implements Interfaces\Dashboard\Widget
      */
     public function getDescription(): string
     {
-        return 'Renders release notes.';
+        return sprintf(
+            'Renders the %s most recent release notes.',
+            static::LIMIT
+        );
+    }
+
+    // --------------------------------------------------------------------------
+
+    public function isPadded(): bool
+    {
+        return false;
     }
 
     // --------------------------------------------------------------------------
@@ -52,85 +59,102 @@ class ReleaseNotes implements Interfaces\Dashboard\Widget
      */
     public function getBody(): string
     {
-        $aTags = array_map(function ($oTag) {
+        $sGuid   = md5(microtime(true));
+        $sStyles = <<<EOT
+        <style type="text/css">
+
+            .release-notes-$sGuid--header {
+                font-weight: bold;
+                font-size: 1.15rem;
+                padding: 1rem;
+                background: #c6c6c6;
+                border-bottom: 2px solid #afafaf;
+            }
+
+            .release-notes-$sGuid--header:after {
+                clear: both;
+                display: block;
+                content: '';
+            }
+
+            .release-notes-$sGuid--tag {
+                float: left;
+            }
+
+            .release-notes-$sGuid--date {
+                float: right;
+                font-size: 0.75rem;
+                opacity: 0.6;
+            }
+
+            .release-notes-$sGuid--body {
+                padding: 1em;
+            }
+
+            .release-notes-$sGuid--body ul {
+                list-style-type: circle;
+                margin-left: 1rem;
+            }
+
+            .release-notes-$sGuid--body li {
+                margin: 0;
+            }
+
+            .release-notes-$sGuid--cta {
+                padding: 1em;
+                margin: 0;
+                border-top: 1px solid #afafaf;
+            }
+
+        </style>
+        EOT;
+
+        $aTags = array_map(function (\Nails\ReleaseNotes\Resource\ReleaseNotes $oTag) use ($sGuid) {
 
             return sprintf(
                 implode(PHP_EOL, [
-                    '<h1 style="float: left;">%s</h1>',
-                    '<h2 style="border: none; padding: 0; margin:0; float: right">%s</h2>',
-                    '<div style="clear: both;">%s</div>',
+                    '<div class="release-notes-' . $sGuid . '">',
+                    '<div class="release-notes-' . $sGuid . '--header">',
+                    '<div class="release-notes-' . $sGuid . '--tag">%s</div>',
+                    '<div class="release-notes-' . $sGuid . '--date">%s</div>',
+                    '</div>',
+                    '<div class="release-notes-' . $sGuid . '--body">%s</div>',
+                    '</div>',
                 ]),
                 $oTag->tag,
                 $oTag->date->formatted,
-                $oTag->body
+                $oTag->renderMessage()
             );
 
         }, $this->getTags());
 
-        return implode(PHP_EOL, array_reverse($aTags));
+        return implode(PHP_EOL, [
+            $sStyles,
+            implode(PHP_EOL, $aTags),
+            sprintf(
+                '<p class="%s"><a href="%s" class="btn btn-primary btn-block">View All</a></a></p>',
+                'release-notes-' . $sGuid . '--cta',
+                siteUrl('admin/releaseNotes/releaseNotes/index')
+            ),
+        ]);
     }
 
     // --------------------------------------------------------------------------
 
+    /**
+     * Returns the most recent N tags
+     *
+     * @return \Nails\ReleaseNotes\Resource\ReleaseNotes[]
+     * @throws \Nails\Common\Exception\FactoryException
+     * @throws \Nails\Common\Exception\ModelException
+     */
     private function getTags(): array
     {
-        //  @todo (Pablo 2021-08-10) - cache results to avoid rate limiting
-        //  @todo (Pablo 2021-08-10) - support GH Access Token
+        /** @var \Nails\ReleaseNotes\Model\ReleaseNotes $oReleaseNotesModel */
+        $oReleaseNotesModel = Factory::model('ReleaseNotes', Constants::MODULE_SLUG);
 
-        /** @var Get $oHttpGet */
-        $oHttpGet = Factory::factory('HttpRequestGet');
-        $aTags    = $oHttpGet
-            ->baseUri('https://api.github.com')
-            ->path(sprintf(
-                'repos/%s/git/refs/tags',
-                static::REPO
-            ))
-            ->auth(...$this->getGitHubCredentials())
-            ->execute()
-            ->getBody();
-
-        $aTags = array_reverse($aTags);
-        $aTags = array_slice($aTags, 0, static::LIMIT);
-
-        //  @todo (Pablo 2021-08-10) - sort results in a reliable fashion (date tagged might not be chronological)
-
-        return array_map(function ($oItem) {
-
-            //  @todo (Pablo 2021-08-10) - return an actual class/resource
-
-            /** @var Get $oHttpGet */
-            $oHttpGet = Factory::factory('HttpRequestGet');
-            $oResult  = $oHttpGet
-                ->baseUri($oItem->object->url)
-                ->auth(...$this->getGitHubCredentials())
-                ->execute()
-                ->getBody();
-
-            return (object) [
-                'tag'  => $oResult->tag,
-                'date' => Factory::resource('DateTime', null, ['raw' => $oResult->tagger->date]),
-                'body' => $this->renderMarkdown($oResult->message),
-            ];
-
-        }, $aTags);
-    }
-
-    // --------------------------------------------------------------------------
-
-    private function getGitHubCredentials(): array
-    {
-        //  @todo (Pablo 2021-08-10) - Get these from settings/env
-        return [
-            static::AUTH_USER,
-            static::AUTH_TOKEN,
-        ];
-    }
-
-    // --------------------------------------------------------------------------
-
-    private function renderMarkdown(string $sInput): string
-    {
-        //  @todo (Pablo 2021-08-10) - actually render markdown
-        return nl2br($sInput);
+        return $oReleaseNotesModel->getAll([
+            'limit' => static::LIMIT,
+        ]);
     }
 }
