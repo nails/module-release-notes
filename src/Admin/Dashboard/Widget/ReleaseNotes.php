@@ -123,7 +123,7 @@ class ReleaseNotes implements Interfaces\Dashboard\Widget
                 ]),
                 $oTag->tag,
                 $oTag->date->formatted,
-                $oTag->renderMessage()
+                $oTag->renderHtml()
             );
 
         }, $this->getTags());
