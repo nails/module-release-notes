@@ -206,14 +206,19 @@ class Fetch extends Base
                 /** @var \stdClass $oTag */
                 $oTag = $oResponse->getBody();
 
-                /** @var DateTime $oDate */
-                $oDate = Factory::resource('DateTime', null, ['raw' => $oTag->tagger->date]);
+                // If the tag is a commit reference, the format is slightly different
+                $sDate = $oTag->tagger->date ?? $oTag->committer->date ?? $oTag->author->date ?? null;
+
+                /** @var DateTime|null $oDate */
+                $oDate = $sDate
+                    ? Factory::resource('DateTime', null, ['raw' => $sDate])
+                    : null;
 
                 $oNewTag = $oReleaseNotesModel->create([
-                    'tag'     => $oTag->tag,
+                    'tag'     => $sTag,
                     'sha'     => $oTag->sha,
                     'message' => $oTag->message,
-                    'date'    => $oDate->format('Y-m-d H:i:s'),
+                    'date'    => $oDate ? $oDate->format('Y-m-d H:i:s') : null,
                 ], true);
 
                 if (empty($oNewTag)) {
