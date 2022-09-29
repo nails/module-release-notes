@@ -1,15 +1,15 @@
 <?php
 
-namespace Nails\Admin\ReleaseNotes;
+namespace Nails\ReleaseNotes\Admin\Controller;
 
 use Nails\Admin\Controller\DefaultController;
 use Nails\ReleaseNotes\Constants;
+use Nails\ReleaseNotes\Admin\Permission;
 
-class ReleaseNotes extends DefaultController
+class Archive extends DefaultController
 {
     const CONFIG_MODEL_NAME         = 'ReleaseNotes';
     const CONFIG_MODEL_PROVIDER     = Constants::MODULE_SLUG;
-    const CONFIG_PERMISSION         = 'releasenotes';
     const CONFIG_SIDEBAR_GROUP      = 'Dashboard';
     const CONFIG_SIDEBAR_FORMAT     = '%s';
     const CONFIG_SORT_DIRECTION     = self::SORT_DESCENDING;
@@ -27,6 +27,8 @@ class ReleaseNotes extends DefaultController
         'Message' => null,
         'Date'    => 'date',
     ];
+    const CONFIG_PERMISSION_BROWSE  = Permission\Archive\Browse::class;
+    const CONFIG_PERMISSION_EDIT    = Permission\Archive\Edit::class;
 
     // --------------------------------------------------------------------------
 

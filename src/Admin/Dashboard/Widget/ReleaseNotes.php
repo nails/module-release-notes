@@ -7,6 +7,8 @@ use Nails\Admin\Interfaces;
 use Nails\Admin\Traits;
 use Nails\Common\Factory\HttpRequest\Get;
 use Nails\Factory;
+use Nails\ReleaseNotes\Admin\Controller\Archive;
+use Nails\ReleaseNotes\Admin\Permission;
 use Nails\ReleaseNotes\Constants;
 
 /**
@@ -43,6 +45,13 @@ class ReleaseNotes implements Interfaces\Dashboard\Widget
             'Renders the %s most recent release notes.',
             static::LIMIT
         );
+    }
+
+    // --------------------------------------------------------------------------
+
+    public function isEnabled(\Nails\Auth\Resource\User $oUser = null): bool
+    {
+        return userHasPermission(Permission\Archive\Browse::class, $oUser);
     }
 
     // --------------------------------------------------------------------------
@@ -134,7 +143,7 @@ class ReleaseNotes implements Interfaces\Dashboard\Widget
             sprintf(
                 '<p class="%s"><a href="%s" class="btn btn-primary btn-block">View All</a></a></p>',
                 'release-notes-' . $sGuid . '--cta',
-                siteUrl('admin/releaseNotes/releaseNotes/index')
+                Archive::url()
             ),
         ]);
     }
