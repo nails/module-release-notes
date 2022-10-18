@@ -6,6 +6,7 @@ parameters:
     bootstrapFiles:
         - constants.php
     scanFiles:
+        - ../vendor/nails/common/helpers/app_setting.php
         - ../vendor/nails/common/helpers/date.php
         - ../vendor/nails/common/helpers/url.php
-        - ../vendor/nails/common/helpers/app_setting.php
+        - ../vendor/nails/module-admin/helpers/permission.php
