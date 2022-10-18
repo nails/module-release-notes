@@ -67,9 +67,33 @@
       <path value="$PROJECT_DIR$/vendor/sebastian/code-unit-reverse-lookup" />
       <path value="$PROJECT_DIR$/vendor/psr/container" />
       <path value="$PROJECT_DIR$/vendor/sebastian/diff" />
+      <path value="$PROJECT_DIR$/vendor/dragonmantank/cron-expression" />
+      <path value="$PROJECT_DIR$/vendor/masterexploder/phpthumb" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-intl-grapheme" />
+      <path value="$PROJECT_DIR$/vendor/symfony/console" />
+      <path value="$PROJECT_DIR$/vendor/symfony/string" />
+      <path value="$PROJECT_DIR$/vendor/symfony/service-contracts" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php73" />
+      <path value="$PROJECT_DIR$/vendor/sybio/gif-creator" />
+      <path value="$PROJECT_DIR$/vendor/sybio/gif-frame-extractor" />
+      <path value="$PROJECT_DIR$/vendor/wikimedia/common-passwords" />
+      <path value="$PROJECT_DIR$/vendor/pleonasm/bloom-filter" />
+      <path value="$PROJECT_DIR$/vendor/sonata-project/google-authenticator" />
+      <path value="$PROJECT_DIR$/vendor/psr/http-factory" />
+      <path value="$PROJECT_DIR$/vendor/nails/module-admin" />
+      <path value="$PROJECT_DIR$/vendor/nails/module-api" />
+      <path value="$PROJECT_DIR$/vendor/nails/module-cdn" />
+      <path value="$PROJECT_DIR$/vendor/nails/module-cron" />
+      <path value="$PROJECT_DIR$/vendor/nails/module-captcha" />
+      <path value="$PROJECT_DIR$/vendor/nails/module-console" />
+      <path value="$PROJECT_DIR$/vendor/hybridauth/hybridauth" />
+      <path value="$PROJECT_DIR$/vendor/nails/module-auth" />
+      <path value="$PROJECT_DIR$/vendor/erusev/parsedown" />
+      <path value="$PROJECT_DIR$/vendor/phpmailer/phpmailer" />
+      <path value="$PROJECT_DIR$/vendor/nails/module-email" />
     </include_path>
   </component>
-  <component name="PhpProjectSharedConfiguration" php_language_level="7.1">
+  <component name="PhpProjectSharedConfiguration" php_language_level="7.4">
     <option name="suggestChangeDefaultLanguageLevel" value="false" />
   </component>
   <component name="PhpStan">
