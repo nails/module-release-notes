@@ -68,9 +68,10 @@ class ReleaseNotes implements Interfaces\Dashboard\Widget
      */
     public function getBody(): string
     {
-        $sGuid   = md5((string) microtime(true));
-        $sStyles = <<<EOT
-        <style type="text/css">
+        $sGuid    = md5((string) microtime(true));
+        $sTagOpen = styleOpen();
+        $sStyles  = <<<EOT
+        $sTagOpen
 
             .release-notes-$sGuid--header {
                 font-weight: bold;
