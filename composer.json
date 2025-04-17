@@ -18,10 +18,10 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "nails\/module-admin": "dev-feature/pre-new-admin",
-        "nails\/module-console": "dev-feature/pre-new-admin",
-        "nails\/module-cron": "dev-feature/pre-new-admin",
-        "nails\/module-email": "dev-feature/pre-new-admin",
+        "nails\/module-admin": "dev-feature/pre-new-admin-ci-php8",
+        "nails\/module-console": "dev-feature/pre-new-admin-ci-php8",
+        "nails\/module-cron": "dev-feature/pre-new-admin-ci-php8",
+        "nails\/module-email": "dev-feature/pre-new-admin-ci-php8",
         "erusev/parsedown": "~1.7"
     },
     "require-dev": {
