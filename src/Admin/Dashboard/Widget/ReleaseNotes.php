@@ -132,11 +132,11 @@ class ReleaseNotes implements Interfaces\Dashboard\Widget
         return implode(PHP_EOL, [
             $sStyles,
             implode(PHP_EOL, $aTags),
-            sprintf(
+            userHasPermission('admin:releasenotes:browse') ? sprintf(
                 '<p class="%s"><a href="%s" class="btn btn-primary btn-block">View All</a></a></p>',
                 'release-notes-' . $sGuid . '--cta',
                 siteUrl('admin/releaseNotes/releaseNotes/index')
-            ),
+            ) : '',
         ]);
     }
 
