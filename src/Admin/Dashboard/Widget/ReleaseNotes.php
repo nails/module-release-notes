@@ -49,7 +49,7 @@ class ReleaseNotes implements Interfaces\Dashboard\Widget
 
     // --------------------------------------------------------------------------
 
-    public function isEnabled(\Nails\Auth\Resource\User $oUser = null): bool
+    public function isEnabled(?\Nails\Auth\Resource\User $oUser = null): bool
     {
         return userHasPermission(Permission\Archive\Browse::class, $oUser);
     }
