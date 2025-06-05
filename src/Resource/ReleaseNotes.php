@@ -86,6 +86,7 @@ class ReleaseNotes extends Entity
          * [bad?] habit of using emdashes in release notes.
          */
         $sMessage = preg_replace('/^(–|—) /m', '- ', $sMessage);
+        $sMessage = htmlspecialchars($sMessage, ENT_QUOTES);
 
         $oParsedown = new \Parsedown();
         return $oParsedown->text($sMessage);
