@@ -16,11 +16,11 @@ return [
     ],
 
     'resources' => [
-        'ReleaseNotes' => function ($oObj): Resource\ReleaseNotes {
+        'ReleaseNotes' => function ($resource, $model): Resource\ReleaseNotes {
             if (class_exists('\App\ReleaseNotes\Resource\ReleaseNotes')) {
-                return new \App\ReleaseNotes\Resource\ReleaseNotes($oObj);
+                return new \App\ReleaseNotes\Resource\ReleaseNotes($resource, $model);
             } else {
-                return new Resource\ReleaseNotes($oObj);
+                return new Resource\ReleaseNotes($resource, $model);
             }
         },
     ],
