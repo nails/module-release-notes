@@ -2,6 +2,8 @@
 
 namespace Nails\ReleaseNotes\Resource;
 
+use League\CommonMark\CommonMarkConverter;
+use League\CommonMark\Exception\CommonMarkException;
 use Nails\Common\Resource\DateTime;
 use Nails\Common\Resource\Entity;
 
@@ -23,12 +25,12 @@ class ReleaseNotes extends Entity
      * Renders the message as HTML, parsing signatures and markdown
      *
      * @return string
+     * @throws CommonMarkException
      */
     public function renderHtml(): string
     {
         $sOut = $this->filterSignatures($this->message ?? '');
-        $sOut = $this->parseMarkdown($sOut);
-        return $sOut;
+        return $this->parseMarkdown($sOut);
     }
 
     // --------------------------------------------------------------------------
@@ -40,14 +42,13 @@ class ReleaseNotes extends Entity
      */
     public function renderText(): string
     {
-        $sOut = $this->filterSignatures($this->message ?? '');
-        return $sOut;
+        return $this->filterSignatures($this->message ?? '');
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Filters GPG signatures form the input
+     * Filters GPG signatures from the input
      *
      * @param string $sMessage The input
      *
@@ -77,6 +78,7 @@ class ReleaseNotes extends Entity
      * @param string $sMessage The input
      *
      * @return string
+     * @throws CommonMarkException
      */
     protected function parseMarkdown(string $sMessage): string
     {
@@ -86,9 +88,9 @@ class ReleaseNotes extends Entity
          * [bad?] habit of using emdashes in release notes.
          */
         $sMessage = preg_replace('/^(–|—) /m', '- ', $sMessage);
-        $sMessage = htmlspecialchars($sMessage, ENT_QUOTES);
+        $sMessage = htmlspecialchars((string) $sMessage, ENT_QUOTES);
 
-        $oParsedown = new \Parsedown();
-        return $oParsedown->text($sMessage);
+        $oCommonMark = new CommonMarkConverter();
+        return $oCommonMark->convert($sMessage);
     }
 }
