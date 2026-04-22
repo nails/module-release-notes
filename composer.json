@@ -18,6 +18,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
+        "php": ">=8.3",
         "nails/module-admin": "dev-develop",
         "nails/module-console": "dev-develop",
         "nails/module-cron": "dev-develop",
