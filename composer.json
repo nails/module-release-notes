@@ -1,12 +1,10 @@
 {
     "name": "nails/module-release-notes",
-    "keywords":
-    [],
+    "keywords": [],
     "homepage": "http://nailsapp.co.uk/modules/release-notes",
     "description": "This module provides Admin controllers and widgets for rendering project release notes.",
     "license": "MIT",
-    "authors":
-    [
+    "authors": [
         {
             "name": "Pablo de la Pena",
             "email": "p@nailsapp.co.uk",
@@ -14,53 +12,43 @@
             "role": "Developer"
         }
     ],
-    "support":
-    {
+    "support": {
         "email": "hello@nailsapp.co.uk"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "require":
-    {
+    "require": {
+        "php": ">=8.3",
         "nails/module-admin": "dev-feature/pre-new-admin",
         "nails/module-console": "dev-feature/pre-new-admin",
         "nails/module-cron": "dev-feature/pre-new-admin",
         "nails/module-email": "dev-feature/pre-new-admin",
         "league/commonmark": "^2.7"
     },
-    "require-dev":
-    {
-        "phpunit/phpunit": "9.*",
-        "phpstan/phpstan": "1.*"
+    "require-dev": {
+        "phpunit/phpunit": "^12.0",
+        "phpstan/phpstan": "^2.0"
     },
-    "scripts":
-    {
+    "scripts": {
         "test": "./vendor/bin/phpunit",
         "analyse": "./vendor/bin/phpstan analyse -c .phpstan/config.neon"
     },
-    "autoload":
-    {
-        "psr-4":
-        {
+    "autoload": {
+        "psr-4": {
             "Nails\\ReleaseNotes\\": "src/"
         }
     },
-    "autoload-dev":
-    {
-        "psr-4":
-        {
+    "autoload-dev": {
+        "psr-4": {
             "Test\\ReleaseNotes\\": "tests/"
         }
     },
-    "extra":
-    {
-        "nails":
-        {
+    "extra": {
+        "nails": {
             "moduleName": "releaseNotes",
             "type": "module",
             "namespace": "Nails\\ReleaseNotes\\",
-            "data":
-            {}
+            "data": {}
         }
     }
 }
