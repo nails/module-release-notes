@@ -13,6 +13,7 @@ use Nails\Components;
 use Nails\Console\Command\Base;
 use Nails\Console\Exception\ConsoleException;
 use Nails\Factory;
+use Nails\ReleaseNotes\Console\TagSyncReport;
 use Nails\ReleaseNotes\Constants;
 use Nails\ReleaseNotes\Resource;
 use Nails\ReleaseNotes\Interfaces;
@@ -180,6 +181,7 @@ class Fetch extends Base
         $oReleaseNotesModel = Factory::model('ReleaseNotes', Constants::MODULE_SLUG);
 
         $aExisting = $oReleaseNotesModel->getAllFlat();
+        $oReport   = new TagSyncReport();
 
         $this->oOutput->writeln('Syncing tags...');
         foreach ($this->aTags as $oTag) {
@@ -188,13 +190,8 @@ class Fetch extends Base
 
                 $sTag = $this->parseTagRef($oTag->ref);
 
-                $this->oOutput->write(sprintf(
-                    ' - Processing tag <info>%s</info>... ',
-                    $sTag
-                ));
-
-                if (in_array($sTag, $aExisting)) {
-                    throw new ConsoleException('already imported');
+                if (!$oReport->consider($sTag, $aExisting)) {
+                    continue;
                 }
 
                 $oResponse = $this->callGitHubApi(
@@ -227,7 +224,7 @@ class Fetch extends Base
 
                 $this->aNewTags[] = $oNewTag;
 
-                $this->oOutput->writeln('<info>done</info>');
+                $this->oOutput->writeln($oReport->imported($sTag));
 
             } catch (\Throwable $e) {
                 $this->oOutput->writeln(sprintf(
@@ -236,6 +233,8 @@ class Fetch extends Base
                 ));
             }
         }
+
+        $this->oOutput->writeln($oReport->summary());
 
         return $this;
     }
