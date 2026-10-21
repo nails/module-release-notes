@@ -8,14 +8,13 @@ class Package implements Exclusion
 {
     public function hidden(): array
     {
-        return [];
+        return [
+            NAILS_DB_PREFIX . 'release_notes',
+        ];
     }
 
     public function readOnly(): array
     {
-        return [
-            NAILS_DB_PREFIX . 'release_notes.sha',
-            NAILS_DB_PREFIX . 'release_notes.tag',
-        ];
+        return [];
     }
 }
