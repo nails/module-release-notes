@@ -17,7 +17,9 @@ class PackageTest extends TestCase
     public function testHidden(): void
     {
         self::assertSame(
-            [],
+            [
+                NAILS_DB_PREFIX . 'release_notes',
+            ],
             (new Package())->hidden()
         );
     }
@@ -25,10 +27,7 @@ class PackageTest extends TestCase
     public function testReadOnly(): void
     {
         self::assertSame(
-            [
-                NAILS_DB_PREFIX . 'release_notes.sha',
-                NAILS_DB_PREFIX . 'release_notes.tag',
-            ],
+            [],
             (new Package())->readOnly()
         );
     }
