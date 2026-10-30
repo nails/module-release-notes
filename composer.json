@@ -26,6 +26,7 @@
         "league/commonmark": "^2.7"
     },
     "require-dev": {
+        "nails/module-find-replace": "dev-feature/pre-new-admin",
         "phpunit/phpunit": "^12.0",
         "phpstan/phpstan": "^2.0"
     },
